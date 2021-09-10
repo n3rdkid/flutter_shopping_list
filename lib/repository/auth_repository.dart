@@ -10,7 +10,7 @@ abstract class BaseAuthRepository {
   Future<void> signOut();
 }
 
-final authServiceProvider =
+final authRepositoryProvider =
     Provider<AuthRepository>((ref) => AuthRepository(ref.read));
 
 class AuthRepository implements BaseAuthRepository {
@@ -34,11 +34,20 @@ class AuthRepository implements BaseAuthRepository {
 
   @override
   User? getCurrentUser() {
-    return _read(firebaseAuthProvider).currentUser;
+    try {
+      return _read(firebaseAuthProvider).currentUser;
+    } catch (e) {
+      CustomException(message: "Firebase failed to sign in.");
+    }
   }
 
   @override
   Future<void> signOut() async {
-    await _read(firebaseAuthProvider).signInAnonymously();
+    try {
+      await _read(firebaseAuthProvider).signOut();
+      await signInAnonymously();
+    } catch (e) {
+      CustomException(message: "Firebase failed to sign in.");
+    }
   }
 }
